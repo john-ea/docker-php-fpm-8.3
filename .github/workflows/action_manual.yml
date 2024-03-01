@@ -1,0 +1,33 @@
+---
+
+# -------------------------------------------------------------------------------------------------
+# Job Name
+# -------------------------------------------------------------------------------------------------
+name: manual
+
+# -------------------------------------------------------------------------------------------------
+# When to run
+# -------------------------------------------------------------------------------------------------
+on:
+  workflow_dispatch:
+  push:
+
+
+jobs:
+
+  # (1/2) Determine repository params
+  params:
+    uses: ./.github/workflows/params.yml
+
+  # (2/2) Build
+  docker:
+    needs: [params]
+    uses: ./.github/workflows/docker-name-version-arch.yml
+    with:
+      enabled: ${{ vars.ENABLED_BUILD == '' && true || fromJSON(vars.ENABLED_BUILD) }}
+      can_deploy: ${{ vars.DEPLOY == '' && true || fromJSON(vars.DEPLOY) }}
+      matrix: ${{ needs.params.outputs.matrix }}
+      refs: ${{ needs.params.outputs.refs }}
+    secrets:
+      dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub_password: ${{ secrets.DOCKERHUB_PASSWORD }}

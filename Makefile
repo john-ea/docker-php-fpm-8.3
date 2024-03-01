@@ -24,9 +24,10 @@ include $(MAKEFILES)
 TAG        = latest
 
 # Makefile.docker overwrites
+DOCKER_USER = johnea
 NAME       = PHP
 VERSION    = 8.3
-IMAGE      = johnea/php-fpm-$(VERSION)
+IMAGE      = $(DOCKER_USER)/php-fpm-$(VERSION)
 DIR        = Dockerfiles
 FILE       = Dockerfile
 DOCKER_TAG = $(TAG)

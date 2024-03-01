@@ -15,7 +15,7 @@ env:
       {
         "NAME":    "PHP",
         "VERSION": ["8.3"],
-        "ARCH":    ["linux/amd64", "linux/386", "linux/arm64", "linux/arm/v7", "linux/arm/v6"]
+        "ARCH":    ${{ format('[{0}]', vars.ARCH || '"linux/amd64", "linux/386", "linux/arm64", "linux/arm/v7", "linux/arm/v6"') }}
       }
     ]
 
@@ -37,6 +37,8 @@ jobs:
   params:
     runs-on: ubuntu-latest
 
+    environment: ${{ vars.ENVIRONMENT }}
+
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       refs: ${{ steps.set-refs.outputs.matrix }}
@@ -45,14 +47,17 @@ jobs:
       - name: "[Set-Output] Matrix"
         id: set-matrix
         run: |
-          echo "::set-output name=matrix::$( echo '${{ env.MATRIX }}' | jq -M -c )"
+          echo "matrix=$( echo '${{ env.MATRIX }}' | jq -M -c )" >> $GITHUB_OUTPUT
 
       - name: "[Set-Output] Matrix 'Refs' (master branch and latest tag)"
         id: set-refs
         uses: cytopia/git-ref-matrix-action@v0.1.13
+        env:
+          DEFAULT_BRANCH: ${{ vars.DEFAULT_BRANCH == '' && 'master' || vars.DEFAULT_BRANCH }}
+          BRANCHES: ${{ vars.BRANCHES == '' && '' || vars.BRANCHES }}
         with:
-          repository_default_branch: master
-          branches: master
+          repository_default_branch: ${{ env.DEFAULT_BRANCH }}
+          branches: ${{ env.BRANCHES }}
           num_latest_tags: 0
         if: github.event_name == 'schedule'
 
